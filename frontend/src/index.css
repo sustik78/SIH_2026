@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#F8FAFC] text-slate-800 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Senior-Friendly / Accessibility Mode overrides */
+.senior-mode {
+  font-size: 115% !important;
+}
+
+.senior-mode h1, .senior-mode h2, .senior-mode h3 {
+  letter-spacing: 0.02em !important;
+}
+
+.senior-mode button, .senior-mode a, .senior-mode input, .senior-mode select {
+  min-height: 48px !important;
+  font-size: 1.05rem !important;
+}
+
+/* High Contrast mode */
+.high-contrast {
+  filter: contrast(125%);
+}
+
+/* Custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Radar pulse animation */
+@keyframes radar-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+.radar-active {
+  animation: radar-pulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+/* Print optimizations for PDF/Doc generation */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
