@@ -86,7 +86,7 @@ Frontend UI will run at `http://localhost:5173/`.
 
 ---
 
-## 🏆 SIH 2026 2-Minute Judge Demo Guide
+## 🏆 Guide to do it
 
 1. Open `http://localhost:5173/`.
 2. Click **Start Packaging Scan**.
