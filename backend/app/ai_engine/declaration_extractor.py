@@ -320,3 +320,126 @@ class DeclarationExtractor:
     @staticmethod
     def _detect_qr_reference(raw_text: str) -> bool:
         return bool(re.search(r"(?:QR\s*Code|Scan\s*(?:for|here|to)|Scan\s*QR)", raw_text, re.IGNORECASE))
+
+    @staticmethod
+    def extract_nutrition_facts(ocr_result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Extracts nutritional information from OCR text and bounding boxes.
+        Only extracts fields genuinely detected on the package without fabrication.
+        """
+        raw_text = ocr_result.get("raw_text", "")
+        lines = ocr_result.get("lines", [])
+
+        serving_size = DeclarationExtractor._extract_serving_size(lines, raw_text)
+        energy = DeclarationExtractor._extract_nutrient(lines, raw_text, r"(?:Energy(?:\s*Value)?|Calories)\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(kcal|kj|cal)?\b", "kcal", r"Energy|Calories")
+        protein = DeclarationExtractor._extract_nutrient(lines, raw_text, r"\bProtein\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|grams)?\b", "g", r"\bProtein\b")
+        carbs = DeclarationExtractor._extract_nutrient(lines, raw_text, r"(?:Total\s*)?Carbohydrate[s]?\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|grams)?\b", "g", r"Carbohydrate")
+        sugars = DeclarationExtractor._extract_nutrient(lines, raw_text, r"(?:Total\s*)?Sugar[s]?\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|grams)?\b", "g", r"\bSugar[s]?\b")
+        added_sugars = DeclarationExtractor._extract_nutrient(lines, raw_text, r"Added\s*Sugar[s]?\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|grams)?\b", "g", r"Added\s*Sugar")
+        fiber = DeclarationExtractor._extract_nutrient(lines, raw_text, r"(?:Dietary\s*)?Fib(?:er|re)\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|grams)?\b", "g", r"Fib(?:er|re)")
+        fat = DeclarationExtractor._extract_nutrient(lines, raw_text, r"(?:Total\s*)?Fat\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|grams)?\b", "g", r"\b(?:Total\s*)?Fat\b")
+        sat_fat = DeclarationExtractor._extract_nutrient(lines, raw_text, r"(?:Saturated\s*Fat|Saturates|Sat\.?\s*Fat)\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|grams)?\b", "g", r"Saturated|Saturates")
+        trans_fat = DeclarationExtractor._extract_nutrient(lines, raw_text, r"(?:Trans\s*Fat(?:ty\s*Acids)?)\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|grams)?\b", "g", r"Trans\s*Fat")
+        sodium = DeclarationExtractor._extract_sodium(lines, raw_text)
+        cholesterol = DeclarationExtractor._extract_nutrient(lines, raw_text, r"Cholesterol\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(mg|g)?\b", "mg", r"Cholesterol")
+
+        return {
+            "serving_size": serving_size,
+            "energy": energy,
+            "protein": protein,
+            "carbohydrates": carbs,
+            "sugars": sugars,
+            "added_sugars": added_sugars,
+            "fiber": fiber,
+            "fat": fat,
+            "saturated_fat": sat_fat,
+            "trans_fat": trans_fat,
+            "sodium": sodium,
+            "cholesterol": cholesterol
+        }
+
+    @staticmethod
+    def _extract_nutrient(lines: List[Dict[str, Any]], raw_text: str, regex_pattern: str, default_unit: str, bbox_pattern: str) -> Dict[str, Any]:
+        match = re.search(regex_pattern, raw_text, re.IGNORECASE)
+        if match:
+            num_str = match.group(1).replace(",", ".")
+            num_val = float(num_str)
+            detected_unit = match.group(2) if len(match.groups()) >= 2 and match.group(2) else default_unit
+            clean_unit = detected_unit.lower()
+            if clean_unit in ["gm", "grams"]: clean_unit = "g"
+            bbox = DeclarationExtractor._find_matching_box(lines, bbox_pattern)
+            return {
+                "value": f"{num_val} {clean_unit}",
+                "numeric_value": num_val,
+                "unit": clean_unit,
+                "per": "100g",
+                "found": True,
+                "confidence": 90,
+                "bbox": bbox
+            }
+        return {
+            "value": None,
+            "numeric_value": None,
+            "unit": default_unit,
+            "per": "100g",
+            "found": False,
+            "confidence": 0,
+            "bbox": None
+        }
+
+    @staticmethod
+    def _extract_sodium(lines: List[Dict[str, Any]], raw_text: str) -> Dict[str, Any]:
+        # Matches Sodium or Salt declarations
+        sod_match = re.search(r"Sodium\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(mg|g|gm)?\b", raw_text, re.IGNORECASE)
+        if sod_match:
+            val = float(sod_match.group(1).replace(",", "."))
+            unit = sod_match.group(2).lower() if sod_match.group(2) else "mg"
+            # Standardize to mg
+            if unit in ["g", "gm"]:
+                val = val * 1000.0
+                unit = "mg"
+            bbox = DeclarationExtractor._find_matching_box(lines, r"Sodium")
+            return {
+                "value": f"{val:.1f} mg",
+                "numeric_value": val,
+                "unit": "mg",
+                "per": "100g",
+                "found": True,
+                "confidence": 92,
+                "bbox": bbox
+            }
+
+        salt_match = re.search(r"Salt\s*[:\-]?\s*(\d+(?:[\.\,]\d+)?)\s*(g|gm|mg)?\b", raw_text, re.IGNORECASE)
+        if salt_match:
+            val = float(salt_match.group(1).replace(",", "."))
+            unit = salt_match.group(2).lower() if salt_match.group(2) else "g"
+            # 1g salt ~ 400mg sodium
+            sod_equiv = val * 400.0 if unit in ["g", "gm"] else val * 0.4
+            bbox = DeclarationExtractor._find_matching_box(lines, r"\bSalt\b")
+            return {
+                "value": f"{sod_equiv:.1f} mg (from {val}{unit} Salt)",
+                "numeric_value": sod_equiv,
+                "unit": "mg",
+                "per": "100g",
+                "found": True,
+                "confidence": 85,
+                "bbox": bbox
+            }
+
+        return {"value": None, "numeric_value": None, "unit": "mg", "per": "100g", "found": False, "confidence": 0, "bbox": None}
+
+    @staticmethod
+    def _extract_serving_size(lines: List[Dict[str, Any]], raw_text: str) -> Dict[str, Any]:
+        match = re.search(r"(?:Nutrition\s*Facts|Information|Per\s*100\s*g|Per\s*100\s*ml|Serving\s*Size\s*[:\-]?\s*([^\n\r]+)|Per\s*Serving)", raw_text, re.IGNORECASE)
+        if match:
+            matched_text = match.group(0).strip()
+            if "100" in matched_text:
+                val = "Per 100g / 100ml"
+            elif match.group(1):
+                val = match.group(1).strip()
+            else:
+                val = "Per 100g"
+            bbox = DeclarationExtractor._find_matching_box(lines, r"(?:Nutrition|Per\s*100|Serving)")
+            return {"value": val, "found": True, "confidence": 88, "bbox": bbox}
+        return {"value": "Per 100g", "found": False, "confidence": 0, "bbox": None}
+

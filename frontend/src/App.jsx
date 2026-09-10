@@ -36,16 +36,16 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans w-full overflow-x-hidden">
       <Navbar onNavigate={handleNavigate} currentTab={currentTab} />
 
-      <div className="flex-1 flex max-w-[1600px] w-full mx-auto">
-        {/* Render sidebar on non-landing pages or when requested */}
+      <div className="flex-1 flex w-full min-w-0">
+        {/* Render sidebar on non-landing, non-login pages */}
         {currentTab !== 'landing' && currentTab !== 'login' && (
           <Sidebar currentTab={currentTab} onNavigate={handleNavigate} />
         )}
 
-        <main className={`flex-1 p-4 sm:p-6 lg:p-8 ${currentTab === 'landing' ? 'max-w-7xl mx-auto w-full' : ''}`}>
+        <main className={`flex-1 min-w-0 ${currentTab === 'landing' ? 'w-full' : 'p-4 sm:p-6 lg:p-8 max-w-[1550px]'}`}>
           {currentTab === 'landing' && (
             <LandingPage onNavigate={handleNavigate} />
           )}
@@ -96,23 +96,22 @@ function MainApp() {
         </main>
       </div>
 
-      {/* Official Government of India & SIH 2026 Footer */}
-      <footer className="bg-[#0B192C] text-slate-400 text-xs border-t border-slate-800 py-6 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div>
-            <span className="font-bold text-slate-200 font-['Outfit']">PRAMAN AI</span>
-            <span className="text-slate-500 mx-2">•</span>
-            <span>Packaging Regulations & Automated Metrology Audit Network</span>
-            <p className="text-[11px] text-slate-500 mt-1">
-              Developed for Smart India Hackathon 2026 • Legal Metrology Act 2009 & Packaged Commodities Rules 2011 Compliance.
-            </p>
+      {/* Official Compact Regulatory Footer */}
+      <footer className="bg-[#0B1B33] text-slate-300 text-xs border-t border-slate-800/90 py-3.5 px-4 sm:px-8">
+        <div className="max-w-[1550px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+            <span className="font-bold text-white tracking-tight font-heading">PRAMAN AI</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-slate-300">Packaging Regulations & Automated Metrology Audit Network</span>
+            <span className="text-slate-500 hidden md:inline">•</span>
+            <span className="text-slate-400 text-[11px] hidden md:inline">SIH 2026 • Legal Metrology Act 2009 & PCR 2011</span>
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
-            <button onClick={() => handleNavigate('rules')} className="text-slate-300 hover:text-white">
+          <div className="flex items-center gap-4 text-xs">
+            <button onClick={() => handleNavigate('rules')} className="text-slate-300 hover:text-white transition-colors underline-offset-4 hover:underline">
               Rule Knowledge Base (40 PDFs)
             </button>
-            <span>•</span>
-            <button onClick={() => handleNavigate('audit')} className="text-slate-300 hover:text-white">
+            <span className="text-slate-600">•</span>
+            <button onClick={() => handleNavigate('audit')} className="text-slate-300 hover:text-white transition-colors underline-offset-4 hover:underline">
               Audit Logs
             </button>
           </div>

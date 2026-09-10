@@ -29,11 +29,17 @@ class TokenResponse(BaseModel):
 
 @router.post("/login", response_model=TokenResponse)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == form_data.username).first()
+    uname = form_data.username.strip()
+    user = db.query(User).filter(
+        (User.username == uname) | 
+        (User.email == uname) |
+        (User.email.ilike(uname)) |
+        (User.username.ilike(uname))
+    ).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid enforcement credentials (username or password)."
+            detail="Invalid enforcement credentials. Please verify your email/ID and password."
         )
 
     # Log audit entry

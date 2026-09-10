@@ -37,8 +37,9 @@ app.add_middleware(
 )
 
 # Mount static files for uploaded and sample images
-uploads_dir = os.path.abspath("backend/uploads")
-samples_dir = os.path.abspath("backend/samples")
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+uploads_dir = os.path.join(backend_dir, "uploads")
+samples_dir = os.path.join(backend_dir, "samples")
 os.makedirs(uploads_dir, exist_ok=True)
 os.makedirs(samples_dir, exist_ok=True)
 

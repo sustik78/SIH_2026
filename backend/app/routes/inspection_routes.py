@@ -79,6 +79,20 @@ def get_inspection_details(
         except Exception:
             pass
 
+    nutrition = {}
+    if inspection.nutrition_json:
+        try:
+            nutrition = json.loads(inspection.nutrition_json)
+        except Exception:
+            pass
+
+    health_classification = None
+    if inspection.health_classification_json:
+        try:
+            health_classification = json.loads(inspection.health_classification_json)
+        except Exception:
+            pass
+
     return {
         "id": inspection.id,
         "inspection_id": inspection.inspection_id,
@@ -98,6 +112,8 @@ def get_inspection_details(
         "violation_count": inspection.violation_count,
         "critical_violations_count": inspection.critical_violations_count,
         "category_scores": category_scores,
+        "nutrition": nutrition,
+        "health_classification": health_classification,
         "status": inspection.status,
         "supervisor_notes": inspection.supervisor_notes,
         "created_at": inspection.created_at.strftime("%d-%b-%Y %H:%M"),

@@ -88,17 +88,17 @@ export const LandingPage = ({ onNavigate }) => {
             { step: '02', title: 'PREPROCESS & OCR', desc: 'OpenCV contrast enhancement & Tesseract 5.4 bounding box extraction.', icon: Layers, color: 'text-indigo-600' },
             { step: '03', title: 'DECLARATION PARSING', desc: 'Deterministic NLP extraction of MRP, Net Qty, Dates, Mfr & Helpline.', icon: Search, color: 'text-amber-600' },
             { step: '04', title: 'PCR RULE ENGINE', desc: 'Evaluate 12 statutory rule groups derived directly from 40 official gazettes.', icon: BookOpenCheck, color: 'text-emerald-600' },
-            { step: '05', title: 'REPORT & EVIDENCE', desc: 'Generate 0-100 score, annotated image overlays, and statutory PDF/DOCX notice.', icon: FileText, color: 'text-purple-600' }
+            { step: '05', title: 'REPORT & EVIDENCE', desc: 'Generate 0-100 score, annotated image overlays, and statutory PDF/DOCX notice.', icon: FileText, color: 'text-blue-700' }
           ].map((item, idx) => {
             const Icon = item.icon;
             return (
               <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative group hover:shadow-md transition-all">
-                <div className="text-[11px] font-mono font-bold text-slate-400 mb-2">STEP {item.step}</div>
+                <div className="text-xs font-mono font-bold text-slate-500 mb-2">STEP {item.step}</div>
                 <div className={`w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center mb-3 ${item.color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <h4 className="text-sm font-bold text-slate-900 mb-1 font-['Outfit']">{item.title}</h4>
-                <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
+                <h4 className="text-sm font-bold text-slate-900 mb-1 font-heading">{item.title}</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">{item.desc}</p>
               </div>
             );
           })}
@@ -108,10 +108,10 @@ export const LandingPage = ({ onNavigate }) => {
       {/* 3. Core Feature Cards */}
       <section className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-10">
-          <h2 className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">
+          <h2 className="text-xs font-bold text-blue-700 uppercase tracking-widest mb-1">
             Statutory Capabilities
           </h2>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-['Outfit']">
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading">
             Built for Real-World Legal Metrology Enforcement
           </h3>
         </div>
@@ -140,7 +140,7 @@ export const LandingPage = ({ onNavigate }) => {
               title: 'Official PDF & Word Reports',
               desc: 'One-click generation of statutory inspection notices with Government of India branding, complete evidence tables, and inspector sign-off.',
               icon: FileText,
-              accent: 'border-l-4 border-l-purple-600'
+              accent: 'border-l-4 border-l-blue-700'
             },
             {
               title: 'Senior-Friendly Accessibility',

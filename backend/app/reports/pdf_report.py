@@ -204,8 +204,65 @@ class PDFReportGenerator:
         story.append(decl_table)
         story.append(Spacer(1, 10))
 
-        # 5. Rule Evaluation & Detected Violations
-        story.append(Paragraph("3. Rule Evaluation & Detected Violations", h2_style))
+        # 3. Nutritional Information & Informational Health Assessment
+        nutrition_data = inspection_data.get("nutrition") or {}
+        health_data = inspection_data.get("health_classification") or {}
+        if nutrition_data or health_data:
+            story.append(Paragraph("3. Nutritional Information & Informational Health Assessment", h2_style))
+            health_cls = health_data.get("classification", "INSUFFICIENT DATA")
+            health_color = colors.HexColor("#059669") if "HEALTHIER" in health_cls else colors.HexColor("#D97706") if "MODERATE" in health_cls else colors.HexColor("#DC2626") if "HIGH" in health_cls else colors.HexColor("#4B5563")
+
+            health_summary_text = f"<b>AI Health Assessment:</b> <font color='{health_color.hexval()}'><b>{health_cls}</b></font> — {health_data.get('summary', 'Informational assessment based on visible package declarations.')}"
+            story.append(Paragraph(health_summary_text, cell_style))
+            story.append(Spacer(1, 4))
+
+            # Nutrition table rows
+            nutri_headers = [
+                Paragraph("<b>Nutrient Field</b>", cell_bold),
+                Paragraph("<b>Extracted Value</b>", cell_bold),
+                Paragraph("<b>Detection Status</b>", cell_bold),
+                Paragraph("<b>Reference</b>", cell_bold)
+            ]
+            nutri_rows = [nutri_headers]
+            
+            nutri_fields = [
+                ("Energy / Calories", nutrition_data.get("energy")),
+                ("Protein", nutrition_data.get("protein")),
+                ("Carbohydrates", nutrition_data.get("carbohydrates")),
+                ("Total Sugars", nutrition_data.get("sugars")),
+                ("Added Sugars", nutrition_data.get("added_sugars")),
+                ("Dietary Fiber", nutrition_data.get("fiber")),
+                ("Total Fat", nutrition_data.get("fat")),
+                ("Saturated Fat", nutrition_data.get("saturated_fat")),
+                ("Sodium / Salt", nutrition_data.get("sodium")),
+            ]
+            for n_name, n_obj in nutri_fields:
+                is_det = bool(n_obj and isinstance(n_obj, dict) and n_obj.get("found"))
+                v_text = str(n_obj.get("value")) if is_det else "Not detected from package"
+                st_text = "DETECTED" if is_det else "NOT DETECTED"
+                st_color = colors.HexColor("#059669") if is_det else colors.HexColor("#6B7280")
+                nutri_rows.append([
+                    Paragraph(n_name, cell_style),
+                    Paragraph(v_text, cell_style),
+                    Paragraph(f"<b>{st_text}</b>", ParagraphStyle("nst", parent=cell_style, textColor=st_color)),
+                    Paragraph(str(n_obj.get("per", "Per 100g")) if is_det else "—", cell_style)
+                ])
+
+            nutri_table = Table(nutri_rows, colWidths=[140, 200, 100, 100])
+            nutri_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0F2942")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
+                ("TOPPADDING", (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
+            ]))
+            story.append(nutri_table)
+            story.append(Paragraph("<font size='7' color='#64748B'><i>Note: Nutritional classification is an AI-derived informational assessment from packaging text, not a clinical diagnosis.</i></font>", cell_style))
+            story.append(Spacer(1, 10))
+
+        # 4. Rule Evaluation & Detected Violations
+        story.append(Paragraph("4. Rule Evaluation & Detected Violations", h2_style))
         rule_headers = [
             Paragraph("<b>Rule ID / Name</b>", cell_bold),
             Paragraph("<b>Statutory Reference</b>", cell_bold),

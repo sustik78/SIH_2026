@@ -10,17 +10,21 @@ export const AccessibilityProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('praman_senior_mode', seniorMode);
     if (seniorMode) {
-      document.body.classList.add('senior-mode');
+      document.documentElement.classList.add('senior-mode', 'large-text');
+      document.body.classList.add('senior-mode', 'large-text');
     } else {
-      document.body.classList.remove('senior-mode');
+      document.documentElement.classList.remove('senior-mode', 'large-text');
+      document.body.classList.remove('senior-mode', 'large-text');
     }
   }, [seniorMode]);
 
   useEffect(() => {
     localStorage.setItem('praman_high_contrast', highContrast);
     if (highContrast) {
+      document.documentElement.classList.add('high-contrast');
       document.body.classList.add('high-contrast');
     } else {
+      document.documentElement.classList.remove('high-contrast');
       document.body.classList.remove('high-contrast');
     }
   }, [highContrast]);

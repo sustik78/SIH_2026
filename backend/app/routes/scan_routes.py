@@ -21,11 +21,13 @@ from ..ai_engine.declaration_extractor import DeclarationExtractor
 from ..ai_engine.visual_evidence import VisualEvidenceGenerator
 from ..compliance_engine.engine import ComplianceRuleEngine
 from ..compliance_engine.scoring import ComplianceScorer
+from ..compliance_engine.nutrition_classifier import NutritionClassifier
 
 router = APIRouter(prefix="/api/scan", tags=["Scanning & Inspection"])
 
-UPLOAD_DIR = os.path.abspath("backend/uploads")
-SAMPLES_DIR = os.path.abspath("backend/samples")
+BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+UPLOAD_DIR = os.path.join(BACKEND_DIR, "uploads")
+SAMPLES_DIR = os.path.join(BACKEND_DIR, "samples")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(SAMPLES_DIR, exist_ok=True)
 
@@ -111,6 +113,10 @@ async def scan_package_image(
     # 4. Declarations Extraction
     declarations_dict = DeclarationExtractor.extract_declarations(ocr_res)
 
+    # 4b. Nutritional Information Extraction & Health Classification
+    nutrition_dict = DeclarationExtractor.extract_nutrition_facts(ocr_res)
+    health_assessment = NutritionClassifier.classify(nutrition_dict, product_category=category)
+
     # 5. Deterministic Compliance Rule Engine
     eval_res = ComplianceRuleEngine.evaluate_compliance(
         declarations=declarations_dict,
@@ -169,6 +175,8 @@ async def scan_package_image(
         violation_count=eval_res["violation_count"],
         critical_violations_count=eval_res["critical_violations_count"],
         category_scores_json=json.dumps(score_res["categories"]),
+        nutrition_json=json.dumps(nutrition_dict),
+        health_classification_json=json.dumps(health_assessment),
         raw_ocr_text=ocr_res.get("raw_text", ""),
         ocr_confidence=ocr_res.get("average_confidence", 0.0),
         status="COMPLETED"
@@ -260,5 +268,7 @@ async def scan_package_image(
         "category_scores": score_res["categories"],
         "evidence_items": evidence_res["evidence_items"],
         "results": eval_res["results"],
-        "declarations": declarations_dict
+        "declarations": declarations_dict,
+        "nutrition": nutrition_dict,
+        "health_classification": health_assessment
     }

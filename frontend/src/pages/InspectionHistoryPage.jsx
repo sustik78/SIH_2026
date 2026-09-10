@@ -115,36 +115,36 @@ export const InspectionHistoryPage = ({ onSelectInspection }) => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-100/70 text-slate-600 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
                 <tr>
-                  <th className="p-3.5">Product Name</th>
-                  <th className="p-3.5">Inspection ID</th>
-                  <th className="p-3.5">Date</th>
-                  <th className="p-3.5">Score</th>
-                  <th className="p-3.5">Status</th>
-                  <th className="p-3.5">Inspector</th>
-                  <th className="p-3.5 text-right">Action</th>
+                  <th className="py-3 px-4">Product Name</th>
+                  <th className="py-3 px-4">Inspection ID</th>
+                  <th className="py-3 px-4">Date</th>
+                  <th className="py-3 px-4">Score</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Inspector</th>
+                  <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-slate-100 text-slate-800">
                 {inspections.map((insp) => {
                   const isCompliant = insp.compliance_status === 'COMPLIANT';
                   const isWarning = insp.compliance_status === 'PENDING REVIEW';
                   return (
-                    <tr key={insp.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3.5 font-bold text-slate-900">
+                    <tr key={insp.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-slate-900">
                         {insp.product_name}
-                        <span className="block text-[10px] font-normal text-slate-400">{insp.category}</span>
+                        <span className="block text-xs font-normal text-slate-500">{insp.category}</span>
                       </td>
-                      <td className="p-3.5 font-mono text-slate-600 font-medium">{insp.inspection_id}</td>
-                      <td className="p-3.5 text-slate-500">{insp.created_at}</td>
-                      <td className="p-3.5">
-                        <span className="font-extrabold text-slate-900 text-sm font-['Outfit']">{insp.overall_score}</span>
-                        <span className="text-[10px] text-slate-400">/100</span>
+                      <td className="py-3.5 px-4 font-mono text-slate-700 font-semibold text-xs">{insp.inspection_id}</td>
+                      <td className="py-3.5 px-4 text-slate-600 text-xs">{insp.created_at}</td>
+                      <td className="py-3.5 px-4">
+                        <span className="font-extrabold text-slate-900 text-base font-heading">{insp.overall_score}</span>
+                        <span className="text-xs text-slate-500">/100</span>
                       </td>
-                      <td className="p-3.5">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                      <td className="py-3.5 px-4">
+                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
                           isCompliant 
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
                             : isWarning 
@@ -154,11 +154,11 @@ export const InspectionHistoryPage = ({ onSelectInspection }) => {
                           {insp.compliance_status}
                         </span>
                       </td>
-                      <td className="p-3.5 font-medium text-slate-800">{insp.inspector_name}</td>
-                      <td className="p-3.5 text-right">
+                      <td className="py-3.5 px-4 font-medium text-slate-800 text-xs">{insp.inspector_name}</td>
+                      <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => onSelectInspection(insp.inspection_id)}
-                          className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold rounded-lg transition-colors inline-flex items-center gap-1"
+                          className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold rounded-xl transition-colors inline-flex items-center gap-1.5 text-xs shadow-xs"
                         >
                           <span>Open Report</span>
                           <ArrowUpRight className="w-3.5 h-3.5" />

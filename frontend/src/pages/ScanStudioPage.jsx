@@ -48,7 +48,7 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
       title: 'Refined Sunflower Oil (1 Litre)',
       category: 'Edible Oils & Fats',
       badge: 'NON-COMPLIANT (68/100)',
-      badgeColor: 'bg-rose-50 text-rose-800 border-rose-300',
+      badgeColor: 'bg-amber-50 text-amber-800 border-amber-300',
       desc: 'MRP lacks statutory "inclusive of all taxes" wording and omits consumer care helpline & email.',
       filename: 'sample_noncompliant_oil.jpg'
     },
@@ -57,7 +57,7 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
       title: 'Desi Chatpata Namkeen Pack',
       category: 'Snack Foods',
       badge: 'CRITICAL VIOLATION (32/100)',
-      badgeColor: 'bg-purple-50 text-purple-800 border-purple-300',
+      badgeColor: 'bg-rose-50 text-rose-800 border-rose-300',
       desc: 'Prohibited expression "Jumbo Saver Pack" in place of metric units, missing standard MRP format, missing Country of Origin.',
       filename: 'sample_critical_snack.jpg'
     }
@@ -106,14 +106,14 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
     setScanStatusText('Step 2/5: Detecting text lines and extracting bounding boxes via Tesseract 5.4...');
     await new Promise(r => setTimeout(r, 550));
 
-    // Step 3: Declaration parsing
+    // Step 3: Declaration & Nutrition parsing
     setScanStep(3);
-    setScanStatusText('Step 3/5: Parsing mandatory Legal Metrology declarations (MRP, Net Qty, Dates, Mfr, Helpline)...');
+    setScanStatusText('Step 3/5: Parsing Legal Metrology declarations (MRP, Net Qty, Dates, Mfr) & extracting Nutritional Facts...');
     await new Promise(r => setTimeout(r, 500));
 
-    // Step 4: Rule Engine Execution
+    // Step 4: Rule Engine & Health Profiling
     setScanStep(4);
-    setScanStatusText('Step 4/5: Evaluating declarations against 40 indexed Legal Metrology gazette rules...');
+    setScanStatusText('Step 4/5: Evaluating declarations against 40 indexed Legal Metrology gazette rules & health profile...');
 
     try {
       const formData = new FormData();
@@ -139,7 +139,7 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
 
       // Step 5: Finalizing
       setScanStep(5);
-      setScanStatusText('Step 5/5: Generating explainable score and overlaying visual bounding box evidence...');
+      setScanStatusText('Step 5/5: Generating explainable score, health indicator, and visual bounding box overlays...');
       await new Promise(r => setTimeout(r, 400));
 
       speakText(`Inspection complete. Overall score: ${result.overall_score} out of 100. Status: ${result.compliance_status}.`);
@@ -155,18 +155,78 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-16">
-      {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wider mb-1">
-          <Scale className="w-4 h-4" />
-          <span>AI Computer Vision & Regulatory Validation Studio</span>
+      {/* Dynamic 5-Stage Visual Inspection Pipeline */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wider mb-0.5">
+              <Scale className="w-4 h-4" />
+              <span>AI Legal Metrology Studio</span>
+            </div>
+            <h1 className="text-2xl font-extrabold text-slate-900 font-heading">
+              Packaged Commodity Inspection Studio
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-semibold bg-blue-50 text-blue-800 border border-blue-200 px-3 py-1 rounded-full">
+              {isScanning ? `Stage ${scanStep}/5 Processing` : selectedFile || selectedSample ? 'Ready for Execution' : 'Awaiting Input'}
+            </span>
+          </div>
         </div>
-        <h1 className="text-2xl font-extrabold text-slate-900 font-['Outfit']">
-          Packaged Commodity Inspection Studio
-        </h1>
-        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-          Upload pre-packaged commodity packaging or select a benchmark sample to execute full Legal Metrology Act, 2009 & PCR 2011 compliance checks.
-        </p>
+
+        {/* Dynamic Pipeline Progression Bar */}
+        <div className="pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+            {[
+              { id: 1, name: 'UPLOAD', label: 'Image Upload', desc: 'Package Photo', activeOn: [0, 1] },
+              { id: 2, name: 'OCR', label: 'Preprocess & OCR', desc: 'Tesseract 5.4 Engine', activeOn: [1, 2] },
+              { id: 3, name: 'EXTRACTION', label: 'Declaration Extraction', desc: 'MRP, Qty, Dates, Mfr', activeOn: [3] },
+              { id: 4, name: 'RULE VALIDATION', label: 'PCR 2011 Validation', desc: '40 Gazette Rules', activeOn: [4] },
+              { id: 5, name: 'RESULT', label: 'Statutory Decision', desc: 'Notice & Evidence', activeOn: [5] }
+            ].map((stage, idx) => {
+              const isCurrent = isScanning ? stage.activeOn.includes(scanStep) : (idx === 0 && !selectedFile && !selectedSample) || (idx === 0 && (selectedFile || selectedSample));
+              const isDone = isScanning ? scanStep > stage.id : false;
+
+              return (
+                <div
+                  key={stage.id}
+                  className={`p-3 rounded-xl border transition-all relative ${
+                    isCurrent && isScanning
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-400/40'
+                      : isCurrent
+                        ? 'bg-blue-50/80 border-blue-300 text-blue-950'
+                        : isDone
+                          ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
+                          : 'bg-slate-50 border-slate-200 text-slate-600'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded ${
+                      isCurrent && isScanning
+                        ? 'bg-white/20 text-white'
+                        : isDone
+                          ? 'bg-emerald-200/80 text-emerald-900'
+                          : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      0{stage.id}
+                    </span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                      isCurrent && isScanning ? 'text-blue-100' : isDone ? 'text-emerald-700' : 'text-slate-400'
+                    }`}>
+                      {isDone ? 'DONE' : isCurrent ? 'ACTIVE' : 'NEXT'}
+                    </span>
+                  </div>
+                  <div className={`text-xs font-bold truncate ${isCurrent && isScanning ? 'text-white' : 'text-slate-900'}`}>
+                    {stage.name}
+                  </div>
+                  <div className={`text-[11px] truncate mt-0.5 ${isCurrent && isScanning ? 'text-blue-100' : 'text-slate-500'}`}>
+                    {stage.desc}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* 2-Minute Judge Demo Quick Samples */}
@@ -176,7 +236,7 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
             <Sparkles className="w-4 h-4 text-amber-500" />
             <span>SIH 2026 Instant Demo Samples (1-Click Test)</span>
           </h3>
-          <span className="text-[11px] text-slate-400">Pre-calibrated regulatory test cases</span>
+          <span className="text-xs text-slate-500">Pre-calibrated regulatory test cases</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -198,11 +258,11 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
                     {sample.badge}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed mb-3">
+                <p className="text-xs text-slate-600 leading-relaxed mb-3">
                   {sample.desc}
                 </p>
-                <div className="flex items-center justify-between text-[11px] font-semibold text-blue-700">
-                  <span>{isSelected ? '✓ Selected for Scan' : 'Click to Load Sample'}</span>
+                <div className="flex items-center justify-between text-xs font-semibold text-blue-700">
+                  <span>{isSelected ? '✓ Loaded for AI Inspection' : 'Click to Load Sample'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>
@@ -230,20 +290,20 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
 
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/40 rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[220px]"
+              className="border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/40 rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[200px]"
             >
-              <UploadCloud className="w-12 h-12 text-blue-600 mb-3 animate-bounce" />
+              <UploadCloud className="w-10 h-10 text-blue-600 mb-2.5 animate-bounce" />
               <p className="text-sm font-bold text-slate-800">
                 Click to browse or drag & drop package photo
               </p>
-              <p className="text-xs text-slate-400 mt-1">
-                Supports JPG, PNG, WEBP (Minimum 300 DPI recommended for numeral height)
+              <p className="text-xs text-slate-500 mt-1">
+                Supports JPG, PNG, WEBP (Minimum 300 DPI recommended)
               </p>
             </div>
           </div>
 
           {/* Form Fields */}
-          <div className="space-y-3 pt-2">
+          <div className="space-y-3 pt-1">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                 Commodity Name / Brand
@@ -253,7 +313,7 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
                 placeholder="e.g., Chakki Fresh Atta 5kg"
-                className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
+                className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-slate-900"
               />
             </div>
 
@@ -264,7 +324,7 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
+                className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-slate-900"
               >
                 <option value="Packaged Food / Grocery">Packaged Food / Grocery</option>
                 <option value="Edible Oils & Fats">Edible Oils & Fats (SOP 2023)</option>
@@ -281,38 +341,50 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
         {/* Right: Packaging Preview & Live Scanning State */}
         <div className="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center justify-between">
-              <span>Packaging Preview</span>
-              {previewUrl && (
-                <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Image Loaded</span>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-900">
+                Packaging Evidence Preview
+              </h3>
+              {previewUrl ? (
+                <span className="text-xs text-emerald-700 font-bold flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Image Loaded (300 DPI)</span>
                 </span>
+              ) : (
+                <span className="text-xs text-slate-400 font-medium">Awaiting image upload</span>
               )}
-            </h3>
+            </div>
 
-            <div className="h-[280px] bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center p-3 overflow-hidden relative">
+            {/* Container */}
+            <div className={`h-[300px] rounded-2xl flex items-center justify-center p-3 overflow-hidden relative transition-all ${
+              previewUrl ? 'bg-slate-950 border border-slate-800 shadow-inner' : 'bg-slate-50/70 border-2 border-dashed border-slate-200'
+            }`}>
               {previewUrl ? (
                 <img
                   src={previewUrl}
                   alt="Packaging preview"
-                  className="max-h-full max-w-full object-contain rounded-lg shadow"
+                  className="max-h-full max-w-full object-contain rounded-lg shadow-md"
                 />
               ) : (
-                <div className="text-slate-500 text-xs flex flex-col items-center gap-2">
-                  <FileImage className="w-10 h-10 text-slate-700" />
-                  <span>No packaging image selected yet</span>
+                <div className="text-center p-6 space-y-2.5">
+                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mx-auto text-slate-400 border border-slate-200 shadow-xs">
+                    <FileImage className="w-6 h-6 text-slate-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">No packaging image selected</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Upload a package photo to begin inspection</p>
+                  </div>
                 </div>
               )}
 
               {/* Live scanning overlay */}
               {isScanning && (
-                <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center space-y-4">
+                <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center space-y-4">
                   <div className="w-14 h-14 rounded-full bg-blue-600/20 border-2 border-blue-500 flex items-center justify-center radar-active">
                     <RefreshCw className="w-6 h-6 text-blue-400 animate-spin" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white font-['Outfit']">
+                    <h4 className="text-sm font-bold text-white font-heading">
                       AI & Rule Engine Processing
                     </h4>
                     <p className="text-xs text-blue-300 mt-1 max-w-xs font-mono">
@@ -327,6 +399,22 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* AI Extraction Target Checklist */}
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+            <div className="font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5 flex items-center justify-between">
+              <span>Automatic Declaration Targets</span>
+              <span className="text-blue-700 font-mono">OCR 5.4 Active</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1 text-[11px] text-slate-600">
+              <span className="flex items-center gap-1"><span className="text-emerald-600 font-bold">✓</span> MRP & Tax Clause</span>
+              <span className="flex items-center gap-1"><span className="text-emerald-600 font-bold">✓</span> Metric Net Quantity</span>
+              <span className="flex items-center gap-1"><span className="text-emerald-600 font-bold">✓</span> Manufacturer Address</span>
+              <span className="flex items-center gap-1"><span className="text-emerald-600 font-bold">✓</span> Mfg / Expiry Dates</span>
+              <span className="flex items-center gap-1"><span className="text-emerald-600 font-bold">✓</span> Consumer Care Redressal</span>
+              <span className="flex items-center gap-1"><span className="text-emerald-600 font-bold">✓</span> Nutritional Facts Panel</span>
             </div>
           </div>
 
@@ -345,7 +433,7 @@ export const ScanStudioPage = ({ onScanComplete, onSelectSample }) => {
             className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all ${
               isScanning || (!selectedFile && !selectedSample)
                 ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white shadow-blue-900/30 hover:scale-[1.01]'
+                : 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-md shadow-blue-900/30 hover:scale-[1.01]'
             }`}
           >
             <ShieldCheck className="w-5 h-5" />

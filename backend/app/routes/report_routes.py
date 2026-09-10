@@ -18,7 +18,8 @@ from ..reports.docx_report import DOCXReportGenerator
 report_router = APIRouter(prefix="/api/reports", tags=["Reports"])
 audit_router = APIRouter(prefix="/api/audit", tags=["Audit Trail"])
 
-REPORTS_DIR = os.path.abspath("backend/reports_out")
+BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+REPORTS_DIR = os.path.join(BACKEND_DIR, "reports_out")
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 def _get_inspection_payload(inspection_id: str, db: Session) -> dict:
@@ -32,6 +33,20 @@ def _get_inspection_payload(inspection_id: str, db: Session) -> dict:
     results = db.query(ComplianceResult).filter(ComplianceResult.inspection_id == inspection.id).all()
     violations = db.query(Violation).filter(Violation.inspection_id == inspection.id).all()
 
+    nutrition = {}
+    if inspection.nutrition_json:
+        try:
+            nutrition = json.loads(inspection.nutrition_json)
+        except Exception:
+            pass
+
+    health_classification = None
+    if inspection.health_classification_json:
+        try:
+            health_classification = json.loads(inspection.health_classification_json)
+        except Exception:
+            pass
+
     return {
         "inspection_id": inspection.inspection_id,
         "product_name": inspection.product_name,
@@ -43,6 +58,8 @@ def _get_inspection_payload(inspection_id: str, db: Session) -> dict:
         "recommended_action": inspection.recommended_action,
         "image_url": inspection.image_url,
         "annotated_image_url": inspection.annotated_image_url,
+        "nutrition": nutrition,
+        "health_classification": health_classification,
         "declarations": [
             {
                 "field_name": d.field_name,
@@ -132,3 +149,14 @@ def list_audit_logs(
         }
         for l in logs
     ]
+
+@audit_router.delete("/logs")
+def clear_audit_logs(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    count = db.query(AuditLog).count()
+    db.query(AuditLog).delete()
+    db.commit()
+    return {"message": f"Successfully cleared {count} audit logs."}
+

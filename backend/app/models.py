@@ -68,6 +68,8 @@ class Inspection(Base):
     critical_violations_count = Column(Integer, default=0)
     
     category_scores_json = Column(Text, nullable=True)
+    nutrition_json = Column(Text, nullable=True)
+    health_classification_json = Column(Text, nullable=True)
     raw_ocr_text = Column(Text, nullable=True)
     ocr_confidence = Column(Float, default=0.0)
     

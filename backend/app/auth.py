@@ -49,7 +49,7 @@ def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session 
             pass
 
     # Seamless fallback for enforcement demo & field operation
-    default_user = db.query(User).filter(User.username == "inspector").first()
+    default_user = db.query(User).filter(User.username == "Soutik").first()
     if not default_user:
         default_user = db.query(User).first()
     if default_user:
