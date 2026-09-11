@@ -107,8 +107,8 @@ async def scan_package_image(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Image preprocessing failed: {str(e)}")
 
-    # 3. OCR Text & Bounding Box Extraction
-    ocr_res = ocr_engine.extract_text_and_boxes(raw_cv_img)
+    # 3. OCR Text & Bounding Box Extraction (Hybrid DL ONNX + Fallback)
+    ocr_res = ocr_engine.extract_text_and_boxes(processed_img, original_shape=raw_cv_img.shape)
     
     # 4. Declarations Extraction
     declarations_dict = DeclarationExtractor.extract_declarations(ocr_res)

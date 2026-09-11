@@ -48,6 +48,8 @@ backend/reports_out/*
 
 # Database (auto-generated on startup/seed)
 *.db
+*.zip
+
 *.sqlite
 *.sqlite3
 
